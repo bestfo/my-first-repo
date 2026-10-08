@@ -30,6 +30,7 @@
   --k-meta: #55606b;
   --k-unread: #f2d200;
   --k-font: "Apple SD Gothic Neo", "Noto Sans KR", "Malgun Gothic", sans-serif;
+  --k-pc-font: "Malgun Gothic", "맑은 고딕", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif;
   color-scheme: light;
 }
 @media (prefers-color-scheme: dark) {
@@ -187,6 +188,60 @@ textarea { resize: vertical; line-height: 1.45; }
 @keyframes pop { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
 @media (prefers-reduced-motion: reduce) { .k-row.enter, .k-divider.enter { animation: none; } }
 
+.k-pill u { text-decoration: underline; text-underline-offset: 2px; }
+.k-emo img { display: block; max-width: 130px; max-height: 130px; }
+
+/* ---------- PC 버전 화면 ---------- */
+.device.pcwin { padding: 0; background: none; border-radius: 0; box-shadow: 0 14px 40px -12px rgba(0,0,0,.35); }
+.screen.pc { width: 441px; height: 769px; border-radius: 0; border: 1px solid #b2b7bd; font-family: var(--k-pc-font); font-size: 13px; letter-spacing: 0; }
+.pc-title { height: 28px; flex: none; display: flex; justify-content: flex-end; align-items: center; padding-right: 2px; }
+.pc-title span { width: 23px; height: 22px; display: flex; align-items: center; justify-content: center; }
+.pc-head { height: 52px; flex: none; display: flex; align-items: center; gap: 10px; padding: 0 12px 4px 13px; }
+.pc-gava { width: 42px; height: 42px; position: relative; flex: none; }
+.pc-gava > div { position: absolute; width: 22px; height: 22px; border-radius: 8px; overflow: hidden; box-shadow: 0 0 0 1.5px var(--k-bg); }
+.pc-gava > div:nth-child(1) { top: 0; left: 11px; }
+.pc-gava > div:nth-child(2) { bottom: 0; left: 0; }
+.pc-gava > div:nth-child(3) { bottom: 0; right: 0; }
+.pc-gava.solo > div { width: 40px; height: 40px; border-radius: 15px; top: 1px; left: 1px; box-shadow: none; }
+.pc-gava svg, .pc-gava img { width: 100%; height: 100%; display: block; object-fit: cover; }
+.pc-names { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 3px; }
+.pc-names b { font-weight: 400; font-size: 15px; color: #111; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; display: flex; align-items: center; gap: 4px; }
+.pc-names small { display: flex; align-items: center; gap: 3px; font-size: 11px; color: #4a5560; }
+.pc-icons { display: flex; align-items: center; gap: 10px; flex: none; }
+.pc-icons span { width: 20px; height: 20px; display: flex; align-items: center; justify-content: center; }
+.screen.pc .k-chat { padding: 2px 0 14px; scrollbar-width: thin; scrollbar-color: #a1abb5 transparent; }
+.screen.pc .k-chat::-webkit-scrollbar { display: block; width: 8px; }
+.screen.pc .k-chat::-webkit-scrollbar-thumb { background: #a1abb5; border-radius: 4px; }
+.screen.pc .k-row { padding: 0 26px 0 17px; margin-top: 14px; }
+.screen.pc .k-row.cont { margin-top: 6px; }
+.screen.pc .k-ava { width: 38px; height: 38px; border-radius: 14px; margin-right: 12px; }
+.screen.pc .k-ava.ghost { height: 0; }
+.screen.pc .k-body { max-width: calc(100% - 50px); }
+.screen.pc .k-name { font-size: 12px; color: #333; margin: 1px 0 6px; }
+.screen.pc .k-line { gap: 6px; }
+.screen.pc .k-bubble, .screen.pc .k-bubble.tail, .screen.pc .k-row.me .k-bubble.tail { border-radius: 4px; padding: 5px 9px; font-size: 13px; line-height: 1.5; max-width: 300px; }
+.screen.pc .k-bubble.tail::before { top: 7px; left: -5px; width: 6px; height: 6px; clip-path: polygon(0 0, 100% 0, 100% 100%); }
+.screen.pc .k-row.me .k-bubble.tail::before { left: auto; right: -5px; clip-path: polygon(0 0, 100% 0, 0 100%); }
+.screen.pc .k-bubble.img { border-radius: 4px; padding: 0; }
+.screen.pc .k-meta { font-size: 11px; color: #4f5a65; line-height: 1.3; }
+.screen.pc .k-unread { font-size: 10px; font-weight: 400; color: #e6c600; text-shadow: none; }
+.screen.pc .k-divider { margin: 14px 0 2px; padding: 0 16px; }
+.screen.pc .k-pill, .screen.pc .k-pill.notice { background: rgba(60, 90, 125, .14); color: #222; font-size: 12.5px; padding: 4px 14px; border-radius: 14px; line-height: 1.45; }
+.pc-input { height: 118px; flex: none; background: #fff; display: flex; flex-direction: column; padding: 11px 9px 8px 14px; }
+.pc-input .txt { flex: 1; min-height: 0; overflow: hidden; font-size: 13px; line-height: 1.5; color: #111; white-space: pre-wrap; word-break: break-word; }
+.pc-input .ph { color: #8a9cb0; }
+.pc-tools { display: flex; align-items: center; gap: 13px; height: 30px; }
+.pc-tools > span { display: flex; align-items: center; }
+.pc-tools .sp { flex: 1; }
+.pc-slider { width: 44px; height: 9px; position: relative; margin-right: 6px; }
+.pc-slider::before { content: ""; position: absolute; left: 0; right: 4px; top: 4px; height: 1px; background: #c8c8c8; }
+.pc-slider::after { content: ""; position: absolute; right: 0; top: 0; width: 9px; height: 9px; border-radius: 50%; border: 1px solid #b5b5b5; background: #fff; box-sizing: border-box; }
+.pc-send { width: 74px; height: 28px; border: 1px solid #e3e3e3; background: #f6f6f6; color: #b3b3b3; border-radius: 3px; display: flex; align-items: center; font-size: 13px; }
+.pc-send b { flex: 1; text-align: center; font-weight: 400; }
+.pc-send i { width: 20px; height: 100%; border-left: 1px solid #e3e3e3; display: flex; align-items: center; justify-content: center; font-style: normal; }
+.pc-send.on { background: var(--k-mine); border-color: #e9d200; color: #111; }
+.pc-send.on i { border-left-color: #e3cc00; }
+
 /* ---------- 녹화 모드 ---------- */
 .stage { position: fixed; inset: 0; z-index: 50; display: flex; align-items: center; justify-content: center; }
 .stage .scaler-wrap { width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; padding: 3vh 3vw; }
@@ -212,16 +267,20 @@ textarea { resize: vertical; line-height: 1.45; }
     <section>
       <h2>채팅방</h2>
       <div class="grid2">
+        <label class="f">화면 스타일
+          <select id="skin"><option value="pc">PC 카톡 (창)</option><option value="mobile">모바일 카톡</option></select>
+        </label>
         <label class="f">채팅방 이름<input type="text" id="roomName"></label>
         <label class="f">인원 표시 (비우면 자동)<input type="text" id="roomCount" placeholder="자동"></label>
-        <label class="f">상단 시계<input type="text" id="statusTime"></label>
+        <label class="f mobile-only">상단 시계<input type="text" id="statusTime"></label>
         <label class="f">배경색<input type="color" id="bgColor"></label>
       </div>
       <div class="grid2">
-        <label class="chk"><input type="checkbox" id="optStatus"> 상단 상태바</label>
+        <label class="chk pc-only"><input type="checkbox" id="optFlag"> 팀채팅 깃발</label>
+        <label class="chk mobile-only"><input type="checkbox" id="optStatus"> 상단 상태바</label>
         <label class="chk"><input type="checkbox" id="optInput"> 하단 입력창</label>
-        <label class="chk"><input type="checkbox" id="optFrame"> 폰 테두리</label>
-        <label class="chk"><input type="checkbox" id="optBattery"> 배터리 아이콘</label>
+        <label class="chk mobile-only"><input type="checkbox" id="optFrame"> 폰 테두리</label>
+        <label class="chk mobile-only"><input type="checkbox" id="optBattery"> 배터리 아이콘</label>
       </div>
     </section>
 
@@ -244,12 +303,13 @@ textarea { resize: vertical; line-height: 1.45; }
         <div class="quick-extra">
           <button class="btn sm primary" id="btnQuickAdd" type="button">추가</button>
           <button class="btn sm" id="btnAddImage" type="button">+ 사진</button>
+          <button class="btn sm" id="btnAddEmo" type="button">+ 이모티콘</button>
           <button class="btn sm" id="btnAddDate" type="button">+ 날짜 구분선</button>
           <button class="btn sm" id="btnAddNotice" type="button">+ 안내 문구</button>
           <input type="file" id="quickImage" accept="image/*" hidden>
         </div>
       </div>
-      <p class="hint">같은 사람이 같은 시간에 연달아 보낸 메시지는 카톡처럼 프로필·시간이 한 번만 표시됩니다. ‘안읽음’은 말풍선 옆 노란 숫자, ‘대기’는 녹화 모드 자동재생에서 이 메시지가 나오기 전 기다리는 초입니다.</p>
+      <p class="hint">같은 사람이 같은 시간에 연달아 보낸 메시지는 카톡처럼 프로필·시간이 한 번만 표시됩니다. ‘안읽음’은 말풍선 옆 노란 숫자, ‘대기’는 녹화 모드 자동재생에서 이 메시지가 나오기 전 기다리는 초입니다. 안내 문구에서 <b>[KD]</b>처럼 대괄호로 감싼 이름은 밑줄로 표시돼요.</p>
       <div class="msgs" id="msgs"></div>
       <div style="height:16px"></div>
     </section>
@@ -302,27 +362,36 @@ textarea { resize: vertical; line-height: 1.45; }
   }
   function sample() {
     const me = uid(), a = uid(), b = uid(), c = uid();
+    const blue = '#a6c6ea';
+    const t = (sender, text, time, unread) => ({ id: uid(), type: 'text', sender, text, time, unread: unread || '' });
     return {
-      room: { name: '우리동네 맛집탐방', count: '', statusTime: '9:41', bg: '#bacee0', showStatus: true, showInput: true, frame: true, battery: true },
+      room: { skin: 'pc', name: '재택근무 출퇴근 체크', flag: true, count: '', statusTime: '9:41', bg: '#bacee0',
+        showStatus: true, showInput: true, frame: true, battery: true },
       people: [
-        { id: me, name: '나', avatar: null, color: '#9fb8cf' },
-        { id: a, name: '김민지', avatar: null, color: '#f2a7a7' },
-        { id: b, name: '박서준', avatar: null, color: '#a7d3b5' },
-        { id: c, name: '이하늘', avatar: null, color: '#c7b4ea' },
+        { id: me, name: 'KD', avatar: null, color: blue },
+        { id: a, name: '디자이너', avatar: null, color: blue },
+        { id: b, name: '김경윤', avatar: null, color: blue },
+        { id: c, name: '모재', avatar: null, color: blue },
       ],
       meId: me,
       messages: [
-        { id: uid(), type: 'date', text: todayKo() },
-        { id: uid(), type: 'notice', text: '이하늘님이 들어왔습니다.' },
-        { id: uid(), type: 'text', sender: a, text: '얘들아 역 앞에 새로 생긴 카페 가봤어?', time: '오후 3:24', unread: '' },
-        { id: uid(), type: 'text', sender: a, text: '오픈 기념으로 음료 1+1 한대!', time: '오후 3:24', unread: '' },
-        { id: uid(), type: 'text', sender: b, text: '헐 진짜? 언제까지래', time: '오후 3:25', unread: '' },
-        { id: uid(), type: 'text', sender: me, text: '나 어제 다녀왔는데 딸기라떼 대박이야 🍓', time: '오후 3:25', unread: '1' },
-        { id: uid(), type: 'text', sender: me, text: '이번 주 일요일까지래', time: '오후 3:25', unread: '1' },
-        { id: uid(), type: 'text', sender: c, text: '그럼 토요일에 다 같이 가자!!', time: '오후 3:27', unread: '' },
-        { id: uid(), type: 'text', sender: a, text: '좋아 👍', time: '오후 3:27', unread: '' },
+        { id: uid(), type: 'date', text: '2026년 3월 24일 화요일' },
+        { id: uid(), type: 'notice', text: '[KD]님이 [디자이너]님, [김경윤]님, [모재]님을 초대했습니다.' },
+        { id: uid(), type: 'notice', text: '[KD]님이 방장이 되어 팀채팅을 시작했어요!' },
+        t(me, '안녕하세요. 재택근무 출퇴근 확인용 카톡방입니다!!', '오후 6:07'),
+        t(a, '반갑습니다', '오후 6:08'),
+        t(me, '네! 정확한 확인을 위해서 이 방에서는 출퇴근 내용만 적어주세요~!!', '오후 6:11'),
+        t(me, '재택근무시 업무일지는 회사 NAS에 업로드 해주세요!', '오후 6:12'),
+        t(me, '업무일지 양식은 NAS에 있습니다!', '오후 6:12'),
+        { id: uid(), type: 'date', text: '2026년 3월 30일 월요일' },
+        t(c, '출근합니다.', '오전 8:55'),
+        t(me, '출근했습니다~~', '오전 8:57'),
+        t(a, '출근했습니다', '오전 9:30'),
+        t(c, '퇴근합니다.', '오후 6:01'),
+        t(me, '퇴근했어요', '오후 6:08'),
+        t(a, '퇴근했어요!', '오후 6:10', '1'),
       ],
-      play: { stageBg: '#1b1d21', startCount: 2, autoDelay: 1.4, typeSpeed: 14, typing: true, anim: true },
+      play: { stageBg: '#3a6ea5', startCount: 3, autoDelay: 1.4, typeSpeed: 14, typing: true, anim: true },
     };
   }
 
@@ -368,11 +437,28 @@ textarea { resize: vertical; line-height: 1.45; }
     smile: '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#555" stroke-width="1.6" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><circle cx="9" cy="10" r=".9" fill="#555" stroke="none"/><circle cx="15" cy="10" r=".9" fill="#555" stroke="none"/><path d="M8.3 14.2c1 1.4 2.2 2 3.7 2s2.7-.6 3.7-2"/></svg>',
     hash: '<svg width="23" height="23" viewBox="0 0 24 24" fill="none" stroke="#555" stroke-width="1.8" stroke-linecap="round"><path d="M9.5 4L8 20M16 4l-1.5 16M4.5 9h15M4 15h15"/></svg>',
     send: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#3a2f00" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19V5M6 11l6-6 6 6"/></svg>',
-    cal: '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2"><rect x="4" y="5.5" width="16" height="14.5" rx="2"/><path d="M4 10h16M8.5 3.5v4M15.5 3.5v4"/></svg>',
+    cal: '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="5.5" width="16" height="14.5" rx="2"/><path d="M4 10h16M8.5 3.5v4M15.5 3.5v4"/></svg>',
     signal: '<svg width="18" height="12" viewBox="0 0 18 12" fill="#111"><rect x="0" y="8" width="3" height="4" rx="1"/><rect x="5" y="5.5" width="3" height="6.5" rx="1"/><rect x="10" y="3" width="3" height="9" rx="1"/><rect x="15" y="0" width="3" height="12" rx="1"/></svg>',
     wifi: '<svg width="17" height="12" viewBox="0 0 17 12" fill="#111"><path d="M8.5 2.2c2.4 0 4.6.9 6.3 2.5l1.2-1.2C14 1.5 11.4.4 8.5.4S3 1.5 1 3.5l1.2 1.2C3.9 3.1 6.1 2.2 8.5 2.2z"/><path d="M8.5 5.6c1.5 0 2.8.5 3.9 1.5l1.2-1.2C12.2 4.6 10.4 3.8 8.5 3.8S4.8 4.6 3.4 5.9l1.2 1.2c1.1-1 2.4-1.5 3.9-1.5z"/><path d="M8.5 9c.6 0 1.1.2 1.6.6L8.5 11.3 6.9 9.6C7.4 9.2 7.9 9 8.5 9z"/></svg>',
     battery: '<svg width="27" height="13" viewBox="0 0 27 13"><rect x=".5" y=".5" width="23" height="12" rx="3.5" fill="none" stroke="#111" stroke-opacity=".4"/><rect x="2" y="2" width="20" height="9" rx="2" fill="#111"/><path d="M25 4.5v4c.8-.3 1.3-1.1 1.3-2s-.5-1.7-1.3-2z" fill="#111" fill-opacity=".45"/></svg>',
   };
+  const PCI = {
+    min: '<svg width="10" height="10" viewBox="0 0 10 10"><path d="M0 5.5h10" stroke="#444"/></svg>',
+    max: '<svg width="10" height="10" viewBox="0 0 10 10"><rect x=".5" y=".5" width="9" height="9" fill="none" stroke="#444"/></svg>',
+    close: '<svg width="10" height="10" viewBox="0 0 10 10"><path d="M.5.5l9 9M9.5.5l-9 9" stroke="#444"/></svg>',
+    flag: '<svg width="13" height="14" viewBox="0 0 13 14"><path d="M1.5 1v12.5" stroke="#111" stroke-width="1.6"/><path d="M2.3 1.3h9.2l-2.2 3.3 2.2 3.3H2.3z" fill="#111"/></svg>',
+    person: '<svg width="11" height="11" viewBox="0 0 12 12" fill="#4a5560"><circle cx="6" cy="3.4" r="2.6"/><path d="M1 11.5c.4-3 2.4-4.6 5-4.6s4.6 1.6 5 4.6z"/></svg>',
+    search: '<svg width="18" height="18" viewBox="0 0 20 20" fill="none" stroke="#111" stroke-width="1.6"><circle cx="8.5" cy="8.5" r="6"/><path d="M13 13l5 5" stroke-linecap="round"/></svg>',
+    phone: '<svg width="18" height="18" viewBox="0 0 20 20" fill="none" stroke="#111" stroke-width="1.5" stroke-linejoin="round"><path d="M6.6 2.2L4.2 2.6C2.8 3 2.2 4.4 2.7 5.8c2 5.5 6 9.6 11.5 11.5 1.4.5 2.8-.1 3.2-1.5l.4-2.4-3.6-1.8-1.6 1.8c-2.5-1.1-4.5-3.1-5.6-5.6l1.8-1.6z"/></svg>',
+    video: '<svg width="20" height="18" viewBox="0 0 22 18" fill="none" stroke="#111" stroke-width="1.5" stroke-linejoin="round"><rect x="1.5" y="3.5" width="13" height="11" rx="1.5"/><path d="M14.5 7.5l5.5-3v9l-5.5-3"/></svg>',
+    menu: '<svg width="18" height="18" viewBox="0 0 20 20" fill="none" stroke="#111" stroke-width="1.6" stroke-linecap="round"><path d="M2.5 4.5h15M2.5 10h15M2.5 15.5h15"/></svg>',
+    plus: '<svg width="18" height="18" viewBox="0 0 20 20" fill="none" stroke="#333" stroke-width="1.5" stroke-linecap="round"><path d="M10 2.5v15M2.5 10h15"/></svg>',
+    smile: '<svg width="18" height="18" viewBox="0 0 20 20" fill="none" stroke="#333" stroke-width="1.4" stroke-linecap="round"><circle cx="10" cy="10" r="7.6"/><circle cx="7.4" cy="8.3" r=".8" fill="#333" stroke="none"/><circle cx="12.6" cy="8.3" r=".8" fill="#333" stroke="none"/><path d="M6.8 11.8c.8 1.2 1.9 1.8 3.2 1.8s2.4-.6 3.2-1.8"/></svg>',
+    file: '<svg width="16" height="18" viewBox="0 0 16 20" fill="none" stroke="#333" stroke-width="1.4" stroke-linejoin="round"><path d="M2 1.5h7.5l4.5 4.5v12.5H2z"/><path d="M9.5 1.5V6H14"/></svg>',
+    chev: '<svg width="8" height="6" viewBox="0 0 8 6"><path d="M1 1.5l3 3 3-3" fill="none" stroke="currentColor" stroke-width="1.2"/></svg>',
+  };
+  // 안내 문구의 [이름] 은 밑줄로
+  const richText = (str) => String(str || '').split(/\[([^\]]+)\]/).map((part, i) => (i % 2 ? h('u', { text: part }) : part));
   function defaultAvatar(color) {
     return svg(`<svg viewBox="0 0 40 40"><rect width="40" height="40" fill="${color || '#9fb8cf'}"/><circle cx="20" cy="16" r="7" fill="#fff" fill-opacity=".92"/><path d="M6.5 38c1.6-7.4 7-11.5 13.5-11.5S31.9 30.6 33.5 38z" fill="#fff" fill-opacity=".92"/></svg>`);
   }
@@ -381,7 +467,7 @@ textarea { resize: vertical; line-height: 1.45; }
   }
 
   // ---------- 이미지 축소 ----------
-  function readImage(file, maxSize, cb) {
+  function readImage(file, maxSize, cb, png) {
     const fr = new FileReader();
     fr.onload = () => {
       const img = new Image();
@@ -389,7 +475,7 @@ textarea { resize: vertical; line-height: 1.45; }
         const s = Math.min(1, maxSize / Math.max(img.width, img.height));
         const c = document.createElement('canvas'); c.width = Math.round(img.width * s); c.height = Math.round(img.height * s);
         c.getContext('2d').drawImage(img, 0, 0, c.width, c.height);
-        cb(c.toDataURL('image/jpeg', 0.86));
+        cb(png ? c.toDataURL('image/png') : c.toDataURL('image/jpeg', 0.86));
       };
       img.src = fr.result;
     };
@@ -402,7 +488,8 @@ textarea { resize: vertical; line-height: 1.45; }
   }
 
   // ---------- 채팅 화면 렌더 ----------
-  const sameGroup = (a, b) => a && b && (a.type === 'text' || a.type === 'image') && (b.type === 'text' || b.type === 'image')
+  const isChat = (m) => m.type === 'text' || m.type === 'image' || m.type === 'emoticon';
+  const sameGroup = (a, b) => a && b && isChat(a) && isChat(b)
     && a.sender === b.sender && (a.time || '') === (b.time || '');
 
   let playCount = null;   // null = 전부 표시
@@ -415,16 +502,30 @@ textarea { resize: vertical; line-height: 1.45; }
     const oldChat = screen.querySelector('.k-chat');
     const oldScroll = oldChat ? oldChat.scrollTop : 0;
     screen.style.setProperty('--k-bg', r.bg);
-    $('device').classList.toggle('bare', !r.frame);
+    const pc = r.skin === 'pc';
+    screen.classList.toggle('pc', pc);
+    $('device').classList.toggle('pcwin', pc);
+    $('device').classList.toggle('bare', !pc && !r.frame);
 
     const kids = [];
-    if (r.showStatus) {
+    const count = r.count === '' || r.count == null ? String(state.people.length) : String(r.count);
+    if (pc) {
+      kids.push(h('div', { class: 'pc-title' }, h('span', null, svg(PCI.min)), h('span', null, svg(PCI.max)), h('span', null, svg(PCI.close))));
+      const others = state.people.filter(p => !isMe(p.id));
+      const group = state.people.length > 2;
+      const shown = group ? [others[0], person(state.meId), others[1]].filter(Boolean) : [others[0] || state.people[0]];
+      kids.push(h('div', { class: 'pc-head' },
+        h('div', { class: 'pc-gava' + (group ? '' : ' solo') }, shown.map(p => h('div', null, avatarNode(p)))),
+        h('div', { class: 'pc-names' },
+          h('b', null, r.flag ? svg(PCI.flag) : null, h('span', { text: r.name })),
+          count && count !== '0' ? h('small', null, svg(PCI.person), count) : null),
+        h('div', { class: 'pc-icons' }, ['search', 'phone', 'video', 'menu'].map(k => h('span', null, svg(PCI[k]))))));
+    } else if (r.showStatus) {
       kids.push(h('div', { class: 'k-status' }, h('span', { text: r.statusTime }),
         h('span', { class: 'icons' }, svg(ICON.signal), svg(ICON.wifi), r.battery ? svg(ICON.battery) : null)));
     } else kids.push(h('div', { style: 'height:14px;flex:none' }));
 
-    const count = r.count === '' || r.count == null ? String(state.people.length) : String(r.count);
-    kids.push(h('div', { class: 'k-head' },
+    if (!pc) kids.push(h('div', { class: 'k-head' },
       h('div', { class: 'k-ic' }, svg(ICON.back)),
       h('div', { class: 'k-title' }, h('b', { text: r.name }), count && count !== '0' ? h('span', { text: count }) : null),
       h('div', { class: 'k-ic' }, svg(ICON.search)),
@@ -440,13 +541,15 @@ textarea { resize: vertical; line-height: 1.45; }
         return;
       }
       if (m.type === 'notice') {
-        chat.append(h('div', { class: 'k-divider' + anim }, h('span', { class: 'k-pill notice', text: m.text || '' })));
+        chat.append(h('div', { class: 'k-divider' + anim }, h('span', { class: 'k-pill notice' }, h('span', null, richText(m.text)))));
         return;
       }
       const mine = isMe(m.sender), p = person(m.sender);
       const cont = sameGroup(prev, m);
       const showTime = !sameGroup(m, next);
-      const bubble = m.type === 'image'
+      const bubble = m.type === 'emoticon'
+        ? h('div', { class: 'k-emo' }, m.image ? h('img', { src: m.image, alt: '' }) : h('div', { style: 'width:110px;height:110px;background:rgba(255,255,255,.4);border-radius:8px' }))
+        : m.type === 'image'
         ? h('div', { class: 'k-bubble img' }, m.image ? h('img', { src: m.image, alt: '' }) : h('div', { style: 'width:180px;height:140px;background:#d9d9d9' }))
         : h('div', { class: 'k-bubble' + (cont ? '' : ' tail'), text: m.text || '' });
       const meta = h('div', { class: 'k-meta' },
@@ -463,7 +566,16 @@ textarea { resize: vertical; line-height: 1.45; }
     });
     kids.push(chat);
 
-    if (r.showInput) {
+    if (pc) {
+      if (r.showInput) {
+        const hasText = typingText.length > 0;
+        kids.push(h('div', { class: 'pc-input' },
+          h('div', { class: 'txt' }, hasText || typingOn ? h('span', null, typingText, h('i', { class: 'caret' })) : h('span', { class: 'ph', text: '메시지 입력' })),
+          h('div', { class: 'pc-tools' }, h('span', null, svg(PCI.plus)), h('span', null, svg(PCI.smile)), h('span', null, svg(PCI.file)),
+            h('span', { class: 'sp' }), h('span', { class: 'pc-slider' }),
+            h('div', { class: 'pc-send' + (hasText ? ' on' : '') }, h('b', { text: '전송' }), h('i', null, svg(PCI.chev))))));
+      }
+    } else if (r.showInput) {
       const hasText = typingText.length > 0;
       kids.push(h('div', { class: 'k-input' },
         h('div', { class: 'bar' },
@@ -513,6 +625,9 @@ textarea { resize: vertical; line-height: 1.45; }
   // ---------- 편집 패널: 채팅방 ----------
   function bindRoom() {
     const r = state.room, p = state.play;
+    const skin = $('skin'); skin.value = r.skin;
+    skin.onchange = () => { r.skin = skin.value; save(); applySkinFields(); renderScreen(); refit(); };
+    applySkinFields();
     const map = [
       ['roomName', 'name', r], ['roomCount', 'count', r], ['statusTime', 'statusTime', r], ['bgColor', 'bg', r],
       ['stageBg', 'stageBg', p], ['startCount', 'startCount', p], ['autoDelay', 'autoDelay', p], ['typeSpeed', 'typeSpeed', p],
@@ -521,7 +636,7 @@ textarea { resize: vertical; line-height: 1.45; }
       const el = $(id); el.value = obj[key];
       el.oninput = () => { obj[key] = el.type === 'number' ? Number(el.value) : el.value; save(); renderScreen(); };
     }
-    const checks = [['optStatus', 'showStatus', r], ['optInput', 'showInput', r], ['optFrame', 'frame', r], ['optBattery', 'battery', r],
+    const checks = [['optFlag', 'flag', r], ['optStatus', 'showStatus', r], ['optInput', 'showInput', r], ['optFrame', 'frame', r], ['optBattery', 'battery', r],
       ['optTyping', 'typing', p], ['optAnim', 'anim', p]];
     for (const [id, key, obj] of checks) {
       const el = $(id); el.checked = !!obj[key];
@@ -529,8 +644,14 @@ textarea { resize: vertical; line-height: 1.45; }
     }
   }
 
+  function applySkinFields() {
+    const pc = state.room.skin === 'pc';
+    document.querySelectorAll('.mobile-only').forEach(el => { el.hidden = pc; });
+    document.querySelectorAll('.pc-only').forEach(el => { el.hidden = !pc; });
+  }
+
   // ---------- 편집 패널: 참여자 ----------
-  const PALETTE = ['#9fb8cf', '#f2a7a7', '#a7d3b5', '#c7b4ea', '#f3c98b', '#8fd0d6', '#e7a9cf', '#b9c48a'];
+  const PALETTE = ['#a6c6ea', '#f2a7a7', '#a7d3b5', '#c7b4ea', '#f3c98b', '#8fd0d6', '#e7a9cf', '#b9c48a'];
   function renderPeople() {
     const box = $('people'); box.replaceChildren();
     state.people.forEach((p) => {
@@ -593,6 +714,8 @@ textarea { resize: vertical; line-height: 1.45; }
   $('btnQuickAdd').onclick = quickAdd;
   $('btnAddImage').onclick = () => pickFile('image/*', (f) => readImage(f, 900, (url) =>
     addMessage({ type: 'image', sender: quickSender, image: url, time: $('quickTime').value.trim() || lastTime(), unread: '' })));
+  $('btnAddEmo').onclick = () => pickFile('image/*', (f) => readImage(f, 300, (url) =>
+    addMessage({ type: 'emoticon', sender: quickSender, image: url, time: $('quickTime').value.trim() || lastTime(), unread: '' }), true));
   $('btnAddDate').onclick = () => addMessage({ type: 'date', text: todayKo() });
   $('btnAddNotice').onclick = () => addMessage({ type: 'notice', text: `${person(quickSender).name}님이 들어왔습니다.` });
 
@@ -614,10 +737,10 @@ textarea { resize: vertical; line-height: 1.45; }
     state.messages.forEach((m, i) => {
       const sys = m.type === 'date' || m.type === 'notice';
       const typeSel = h('select', { 'aria-label': '종류' },
-        [['text', '텍스트'], ['image', '사진'], ['date', '날짜'], ['notice', '안내']].map(([v, t]) => h('option', { value: v, text: t, selected: m.type === v })));
+        [['text', '텍스트'], ['image', '사진'], ['emoticon', '이모티콘'], ['date', '날짜'], ['notice', '안내']].map(([v, t]) => h('option', { value: v, text: t, selected: m.type === v })));
       typeSel.onchange = () => {
         m.type = typeSel.value;
-        if ((m.type === 'text' || m.type === 'image') && !m.sender) { m.sender = quickSender; m.time = m.time || lastTime(); }
+        if (isChat(m) && !m.sender) { m.sender = quickSender; m.time = m.time || lastTime(); }
         if (m.type === 'date' && !m.text) m.text = todayKo();
         save(); renderMsgs(); renderScreen();
       };
@@ -643,10 +766,11 @@ textarea { resize: vertical; line-height: 1.45; }
         tools);
 
       let bodyEl;
-      if (m.type === 'image') {
+      if (m.type === 'image' || m.type === 'emoticon') {
+        const emo = m.type === 'emoticon';
         bodyEl = h('div', { class: 'img-pick' }, m.image ? h('img', { src: m.image, alt: '' }) : null,
           h('button', { class: 'btn sm', type: 'button', text: m.image ? '사진 바꾸기' : '사진 선택',
-            onclick: () => pickFile('image/*', (f) => readImage(f, 900, (url) => { m.image = url; save(); renderMsgs(); renderScreen(); })) }));
+            onclick: () => pickFile('image/*', (f) => readImage(f, emo ? 300 : 900, (url) => { m.image = url; save(); renderMsgs(); renderScreen(); }, emo)) }));
       } else {
         bodyEl = h('textarea', { rows: m.type === 'text' ? 2 : 1, value: m.text || '', 'aria-label': '내용' });
         bodyEl.oninput = () => { m.text = bodyEl.value; save(); renderScreen(); };
