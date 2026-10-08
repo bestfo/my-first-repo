@@ -1,0 +1,778 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>채팅방 메이커</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&display=swap">
+<style>
+/* Layout: 왼쪽은 편집 패널, 오른쪽은 실제 크기 비율의 폰 미리보기. 녹화 모드에서는 폰만 전체 화면에 띄움 */
+:root {
+  /* 편집 패널 */
+  --bg: #eef1f5;
+  --panel: #ffffff;
+  --fg: #1d232b;
+  --muted: #69737f;
+  --line: #dde2e8;
+  --field: #f6f8fa;
+  --accent: #2f6fd6;
+  --danger: #d64545;
+  --ui: "Noto Sans KR", "Apple SD Gothic Neo", "Malgun Gothic", system-ui, sans-serif;
+
+  /* 채팅방 화면 (테마와 무관하게 고정) */
+  --k-bg: #bacee0;
+  --k-mine: #fee500;
+  --k-other: #ffffff;
+  --k-text: #111111;
+  --k-name: #3c4650;
+  --k-meta: #55606b;
+  --k-unread: #f2d200;
+  --k-font: "Apple SD Gothic Neo", "Noto Sans KR", "Malgun Gothic", sans-serif;
+  color-scheme: light;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #15191e; --panel: #1e242b; --fg: #e6eaef; --muted: #98a2ae;
+    --line: #2e3640; --field: #262d35; --accent: #6ea2ff; --danger: #ff7a7a;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #15191e; --panel: #1e242b; --fg: #e6eaef; --muted: #98a2ae;
+  --line: #2e3640; --field: #262d35; --accent: #6ea2ff; --danger: #ff7a7a;
+  color-scheme: dark;
+}
+
+* { box-sizing: border-box; }
+[hidden] { display: none !important; }
+html, body { height: 100%; }
+body { margin: 0; background: var(--bg); color: var(--fg); font: 14px/1.5 var(--ui); }
+button, input, select, textarea { font: inherit; color: inherit; }
+button { cursor: pointer; }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+.app { display: grid; grid-template-columns: minmax(0, 520px) minmax(0, 1fr); height: 100%; }
+@media (max-width: 900px) { .app { grid-template-columns: 1fr; height: auto; } .preview-col { height: 80vh; } }
+
+/* ---------- 편집 패널 ---------- */
+.editor { overflow-y: auto; border-right: 1px solid var(--line); background: var(--panel); padding: 0 16px 40px; }
+.topbar { position: sticky; top: 0; z-index: 5; background: var(--panel); display: flex; flex-wrap: wrap; align-items: center; gap: 8px; padding: 14px 0 12px; border-bottom: 1px solid var(--line); }
+.topbar h1 { font-size: 17px; margin: 0 auto 0 0; letter-spacing: -0.01em; }
+.btn { border: 1px solid var(--line); background: var(--field); border-radius: 8px; padding: 6px 11px; font-size: 13px; }
+.btn:hover { border-color: var(--muted); }
+.btn.primary { background: var(--accent); border-color: var(--accent); color: #fff; font-weight: 600; }
+.btn.danger { color: var(--danger); }
+.btn.sm { padding: 3px 8px; font-size: 12px; }
+.icon-btn { border: 0; background: none; padding: 3px 6px; border-radius: 6px; color: var(--muted); font-size: 13px; }
+.icon-btn:hover { background: var(--field); color: var(--fg); }
+.icon-btn.del:hover { color: var(--danger); }
+
+section { padding: 16px 0 4px; border-bottom: 1px solid var(--line); }
+section > h2 { font-size: 12px; text-transform: uppercase; letter-spacing: 0.06em; color: var(--muted); margin: 0 0 10px; font-weight: 700; }
+.grid2 { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 10px 12px; margin-bottom: 12px; }
+label.f { display: flex; flex-direction: column; gap: 4px; font-size: 12px; color: var(--muted); min-width: 0; }
+label.chk { display: flex; align-items: center; gap: 6px; font-size: 13px; }
+input[type=text], input[type=number], select, textarea {
+  background: var(--field); border: 1px solid var(--line); border-radius: 7px; padding: 6px 8px; width: 100%; min-width: 0;
+}
+input[type=color] { width: 100%; height: 34px; border: 1px solid var(--line); border-radius: 7px; background: var(--field); padding: 2px; }
+textarea { resize: vertical; line-height: 1.45; }
+.hint { font-size: 12px; color: var(--muted); margin: 0 0 12px; }
+
+/* 참여자 */
+.people { display: flex; flex-direction: column; gap: 8px; margin-bottom: 12px; }
+.person { display: grid; grid-template-columns: 40px minmax(0, 1fr) auto auto; gap: 10px; align-items: center; }
+.ava-btn { width: 40px; height: 40px; border-radius: 15px; overflow: hidden; border: 0; padding: 0; position: relative; }
+.ava-btn img, .ava-btn svg { width: 100%; height: 100%; display: block; object-fit: cover; }
+.me-tag { font-size: 12px; display: flex; gap: 4px; align-items: center; color: var(--muted); white-space: nowrap; }
+
+/* 빠른 입력 */
+.quick { background: var(--field); border: 1px solid var(--line); border-radius: 10px; padding: 10px; margin-bottom: 12px; display: flex; flex-direction: column; gap: 8px; }
+.chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.chip { border: 1px solid var(--line); background: var(--panel); border-radius: 999px; padding: 3px 10px; font-size: 13px; }
+.chip[aria-pressed="true"] { background: var(--accent); border-color: var(--accent); color: #fff; }
+.quick-row { display: flex; gap: 6px; align-items: stretch; }
+.quick-row textarea { flex: 1; }
+.quick-row .time { width: 92px; flex: none; }
+.quick textarea { background: var(--panel); }
+.quick input { background: var(--panel); }
+.quick-extra { display: flex; flex-wrap: wrap; gap: 6px; }
+
+/* 메시지 목록 */
+.msgs { display: flex; flex-direction: column; gap: 8px; }
+.mrow { border: 1px solid var(--line); border-radius: 10px; padding: 8px; display: flex; flex-direction: column; gap: 6px; background: var(--panel); }
+.mrow.me { border-left: 4px solid #e8cf00; }
+.mrow.sys { border-left: 4px solid var(--muted); }
+.mtop { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+.mtop .idx { font-size: 12px; color: var(--muted); width: 22px; font-variant-numeric: tabular-nums; }
+.mtop select { width: auto; flex: 0 1 auto; padding: 4px 6px; font-size: 13px; }
+.mtop input { padding: 4px 6px; font-size: 13px; }
+.mtop .time { width: 84px; }
+.mtop .num { width: 58px; }
+.mtop .tools { margin-left: auto; display: flex; gap: 0; }
+.img-pick { display: flex; gap: 8px; align-items: center; font-size: 12px; color: var(--muted); }
+.img-pick img { width: 56px; height: 56px; object-fit: cover; border-radius: 8px; }
+.empty { color: var(--muted); font-size: 13px; padding: 12px; text-align: center; border: 1px dashed var(--line); border-radius: 10px; }
+
+/* ---------- 미리보기 ---------- */
+.preview-col { display: flex; flex-direction: column; min-width: 0; min-height: 0; height: 100%; }
+.preview-bar { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; padding: 12px 16px; font-size: 13px; color: var(--muted); }
+.preview-area { flex: 1; min-height: 0; position: relative; display: flex; align-items: center; justify-content: center; padding: 8px 16px 24px; }
+.scaler { position: relative; }
+.scaler > .device { position: absolute; top: 0; left: 0; transform-origin: 0 0; }
+
+.device { border-radius: 58px; background: #0d0d0f; padding: 13px; box-shadow: 0 0 0 2px #3a3a3e, 0 30px 60px -20px rgba(0,0,0,.45); }
+.device.bare { padding: 0; background: none; box-shadow: none; border-radius: 0; }
+.device.bare .screen { border-radius: 0; }
+
+/* ---------- 채팅방 화면 ---------- */
+.screen { width: 390px; height: 844px; border-radius: 46px; overflow: hidden; position: relative; display: flex; flex-direction: column;
+  background: var(--k-bg); font-family: var(--k-font); color: var(--k-text); -webkit-font-smoothing: antialiased; letter-spacing: -0.01em; }
+.k-status { height: 50px; flex: none; display: flex; justify-content: space-between; align-items: center; padding: 6px 30px 0 40px; font-size: 16px; font-weight: 600; }
+.k-status .icons { display: flex; gap: 6px; align-items: center; }
+.k-head { height: 50px; flex: none; display: flex; align-items: center; padding: 0 10px 0 6px; gap: 4px; }
+.k-head .k-title { flex: 1; min-width: 0; display: flex; align-items: baseline; gap: 5px; font-size: 17px; font-weight: 600; white-space: nowrap; overflow: hidden; }
+.k-head .k-title b { overflow: hidden; text-overflow: ellipsis; font-weight: 600; }
+.k-head .k-title span { color: rgba(0,0,0,.42); font-size: 16px; font-weight: 500; flex: none; }
+.k-head .k-ic { width: 38px; height: 38px; display: flex; align-items: center; justify-content: center; flex: none; }
+.k-chat { flex: 1; min-height: 0; overflow-y: auto; overflow-x: hidden; padding: 4px 0 14px; scrollbar-width: none; }
+.k-chat::-webkit-scrollbar { display: none; }
+
+.k-row { display: flex; padding: 0 10px 0 10px; margin-top: 12px; }
+.k-row.cont { margin-top: 4px; }
+.k-row.me { justify-content: flex-end; padding-right: 12px; }
+.k-ava { width: 40px; height: 40px; border-radius: 15px; overflow: hidden; flex: none; margin-right: 8px; }
+.k-ava img, .k-ava svg { width: 100%; height: 100%; display: block; object-fit: cover; }
+.k-ava.ghost { visibility: hidden; height: 0; }
+.k-body { display: flex; flex-direction: column; min-width: 0; max-width: calc(100% - 48px); }
+.k-row.me .k-body { align-items: flex-end; max-width: 100%; }
+.k-name { font-size: 12.5px; color: var(--k-name); margin: 0 0 5px 1px; line-height: 1.2; }
+.k-line { display: flex; align-items: flex-end; gap: 5px; }
+.k-row.me .k-line { flex-direction: row-reverse; }
+.k-bubble { position: relative; background: var(--k-other); border-radius: 14px; padding: 8px 11px 8px; font-size: 15px; line-height: 1.38;
+  max-width: 252px; white-space: pre-wrap; word-break: break-word; overflow-wrap: anywhere; }
+.k-row.me .k-bubble { background: var(--k-mine); }
+.k-bubble.tail { border-top-left-radius: 4px; }
+.k-row.me .k-bubble.tail { border-top-left-radius: 14px; border-top-right-radius: 4px; }
+.k-bubble.tail::before { content: ""; position: absolute; top: 0; left: -7px; width: 10px; height: 12px; background: inherit; clip-path: polygon(0 0, 100% 0, 100% 100%); }
+.k-row.me .k-bubble.tail::before { left: auto; right: -7px; clip-path: polygon(0 0, 100% 0, 0 100%); }
+.k-bubble.img { padding: 0; background: none; overflow: hidden; border-radius: 14px; }
+.k-bubble.img::before { display: none; }
+.k-bubble.img img { display: block; max-width: 230px; max-height: 300px; object-fit: cover; }
+.k-meta { display: flex; flex-direction: column; align-items: flex-start; flex: none; font-size: 10.5px; line-height: 1.25; color: var(--k-meta); white-space: nowrap; padding-bottom: 1px; }
+.k-row.me .k-meta { align-items: flex-end; }
+.k-unread { color: var(--k-unread); font-weight: 700; font-size: 11px; text-shadow: 0 0 1px rgba(0,0,0,.08); }
+
+.k-divider { display: flex; justify-content: center; margin: 16px 0 4px; padding: 0 20px; }
+.k-pill { display: inline-flex; align-items: center; gap: 5px; background: rgba(0,0,0,.13); color: #fff; font-size: 12px; line-height: 1.35;
+  padding: 4px 12px; border-radius: 999px; text-align: center; max-width: 100%; }
+.k-pill.notice { border-radius: 12px; padding: 5px 14px; }
+
+.k-input { flex: none; background: #fff; padding: 7px 10px 0; display: flex; flex-direction: column; }
+.k-input .bar { display: flex; align-items: center; gap: 8px; min-height: 44px; }
+.k-input .plus { width: 30px; height: 30px; display: flex; align-items: center; justify-content: center; flex: none; }
+.k-input .field { flex: 1; min-width: 0; min-height: 38px; border-radius: 20px; background: #f3f3f3; display: flex; align-items: center; padding: 6px 8px 6px 14px; gap: 6px; }
+.k-input .field .txt { flex: 1; min-width: 0; font-size: 15px; line-height: 1.35; white-space: pre-wrap; word-break: break-word; max-height: 82px; overflow: hidden; display: flex; flex-direction: column; justify-content: flex-end; }
+.k-input .field .ph { color: #b3b3b3; }
+.k-input .send { width: 34px; height: 34px; border-radius: 12px; background: var(--k-mine); display: flex; align-items: center; justify-content: center; flex: none; }
+.k-input .hash { width: 34px; height: 34px; display: flex; align-items: center; justify-content: center; flex: none; }
+.k-input .home { height: 34px; display: flex; align-items: flex-end; justify-content: center; padding-bottom: 8px; }
+.k-input .home i { width: 134px; height: 5px; border-radius: 3px; background: #111; display: block; }
+.caret { display: inline-block; width: 1.5px; height: 1.1em; background: #2a7cf0; vertical-align: -0.15em; margin-left: 1px; animation: blink 1s steps(1) infinite; }
+@keyframes blink { 50% { opacity: 0; } }
+
+.k-row.enter, .k-divider.enter { animation: pop .26s ease-out; }
+@keyframes pop { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
+@media (prefers-reduced-motion: reduce) { .k-row.enter, .k-divider.enter { animation: none; } }
+
+/* ---------- 녹화 모드 ---------- */
+.stage { position: fixed; inset: 0; z-index: 50; display: flex; align-items: center; justify-content: center; }
+.stage .scaler-wrap { width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; padding: 3vh 3vw; }
+.stage-hint { position: fixed; left: 50%; bottom: 20px; transform: translateX(-50%); background: rgba(0,0,0,.75); color: #fff; font: 13px/1.5 var(--ui);
+  padding: 10px 16px; border-radius: 10px; z-index: 60; text-align: center; transition: opacity .4s; max-width: calc(100% - 32px); }
+.stage-hint kbd { background: rgba(255,255,255,.18); border-radius: 4px; padding: 0 5px; font-family: inherit; }
+.stage-hint.gone { opacity: 0; pointer-events: none; }
+.stage.nocursor { cursor: none; }
+</style>
+</head>
+<body>
+<div class="app">
+  <aside class="editor">
+    <div class="topbar">
+      <h1>채팅방 메이커</h1>
+      <button class="btn primary" id="btnRecord" type="button">▶ 녹화 모드</button>
+      <button class="btn" id="btnExport" type="button">저장(JSON)</button>
+      <label class="btn" for="fileImport">불러오기</label>
+      <input type="file" id="fileImport" accept="application/json,.json" hidden>
+      <button class="btn danger" id="btnReset" type="button">새로 시작</button>
+    </div>
+
+    <section>
+      <h2>채팅방</h2>
+      <div class="grid2">
+        <label class="f">채팅방 이름<input type="text" id="roomName"></label>
+        <label class="f">인원 표시 (비우면 자동)<input type="text" id="roomCount" placeholder="자동"></label>
+        <label class="f">상단 시계<input type="text" id="statusTime"></label>
+        <label class="f">배경색<input type="color" id="bgColor"></label>
+      </div>
+      <div class="grid2">
+        <label class="chk"><input type="checkbox" id="optStatus"> 상단 상태바</label>
+        <label class="chk"><input type="checkbox" id="optInput"> 하단 입력창</label>
+        <label class="chk"><input type="checkbox" id="optFrame"> 폰 테두리</label>
+        <label class="chk"><input type="checkbox" id="optBattery"> 배터리 아이콘</label>
+      </div>
+    </section>
+
+    <section>
+      <h2>참여자</h2>
+      <p class="hint">프로필 사진을 누르면 이미지를 올릴 수 있어요. ‘나’로 지정한 사람의 말은 오른쪽 노란 말풍선으로 나옵니다.</p>
+      <div class="people" id="people"></div>
+      <button class="btn sm" id="btnAddPerson" type="button">+ 참여자 추가</button>
+      <div style="height:12px"></div>
+    </section>
+
+    <section>
+      <h2>대화 입력</h2>
+      <div class="quick">
+        <div class="chips" id="quickChips"></div>
+        <div class="quick-row">
+          <textarea id="quickText" rows="2" placeholder="메시지 입력 후 Enter (줄바꿈은 Shift+Enter)"></textarea>
+          <input type="text" class="time" id="quickTime" placeholder="오후 3:24" aria-label="보낸 시간">
+        </div>
+        <div class="quick-extra">
+          <button class="btn sm primary" id="btnQuickAdd" type="button">추가</button>
+          <button class="btn sm" id="btnAddImage" type="button">+ 사진</button>
+          <button class="btn sm" id="btnAddDate" type="button">+ 날짜 구분선</button>
+          <button class="btn sm" id="btnAddNotice" type="button">+ 안내 문구</button>
+          <input type="file" id="quickImage" accept="image/*" hidden>
+        </div>
+      </div>
+      <p class="hint">같은 사람이 같은 시간에 연달아 보낸 메시지는 카톡처럼 프로필·시간이 한 번만 표시됩니다. ‘안읽음’은 말풍선 옆 노란 숫자, ‘대기’는 녹화 모드 자동재생에서 이 메시지가 나오기 전 기다리는 초입니다.</p>
+      <div class="msgs" id="msgs"></div>
+      <div style="height:16px"></div>
+    </section>
+
+    <section>
+      <h2>녹화 모드 설정</h2>
+      <div class="grid2">
+        <label class="f">녹화 배경색<input type="color" id="stageBg"></label>
+        <label class="f">처음에 보일 메시지 수<input type="number" id="startCount" min="0"></label>
+        <label class="f">자동재생 간격(초)<input type="number" id="autoDelay" min="0.2" step="0.1"></label>
+        <label class="f">타이핑 속도(글자/초)<input type="number" id="typeSpeed" min="2" step="1"></label>
+      </div>
+      <div class="grid2">
+        <label class="chk"><input type="checkbox" id="optTyping"> 내 메시지 타이핑 효과</label>
+        <label class="chk"><input type="checkbox" id="optAnim"> 말풍선 등장 애니메이션</label>
+      </div>
+      <p class="hint">녹화 모드 단축키: <b>Space / →</b> 다음 메시지, <b>←</b> 이전, <b>A</b> 자동재생 켜기/끄기, <b>R</b> 처음으로, <b>Esc</b> 나가기. 화면 녹화 프로그램으로 녹화하면 됩니다. 크로마키가 필요하면 녹화 배경색을 초록(#00FF00)으로 바꾸고 폰 테두리를 켜 두세요.</p>
+    </section>
+  </aside>
+
+  <main class="preview-col">
+    <div class="preview-bar"><span id="previewInfo">미리보기</span></div>
+    <div class="preview-area" id="previewArea">
+      <div class="scaler" id="scaler">
+        <div class="device" id="device"><div class="screen" id="screen"></div></div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<div class="stage" id="stage" hidden>
+  <div class="scaler-wrap" id="stageWrap"></div>
+</div>
+<div class="stage-hint gone" id="stageHint"><kbd>Space</kbd> 다음 · <kbd>←</kbd> 이전 · <kbd>A</kbd> 자동재생 · <kbd>R</kbd> 처음으로 · <kbd>Esc</kbd> 나가기</div>
+
+<script>
+(() => {
+  const STORE_KEY = 'chat-maker-v1';
+  const uid = () => Math.random().toString(36).slice(2, 10);
+  const $ = (id) => document.getElementById(id);
+
+  // ---------- 기본값 / 예시 ----------
+  function nowKoTime() {
+    const d = new Date(); let h = d.getHours(); const m = String(d.getMinutes()).padStart(2, '0');
+    const ap = h < 12 ? '오전' : '오후'; h = h % 12 || 12; return `${ap} ${h}:${m}`;
+  }
+  function todayKo() {
+    const d = new Date(); const w = '일월화수목금토'[d.getDay()];
+    return `${d.getFullYear()}년 ${d.getMonth() + 1}월 ${d.getDate()}일 ${w}요일`;
+  }
+  function sample() {
+    const me = uid(), a = uid(), b = uid(), c = uid();
+    return {
+      room: { name: '우리동네 맛집탐방', count: '', statusTime: '9:41', bg: '#bacee0', showStatus: true, showInput: true, frame: true, battery: true },
+      people: [
+        { id: me, name: '나', avatar: null, color: '#9fb8cf' },
+        { id: a, name: '김민지', avatar: null, color: '#f2a7a7' },
+        { id: b, name: '박서준', avatar: null, color: '#a7d3b5' },
+        { id: c, name: '이하늘', avatar: null, color: '#c7b4ea' },
+      ],
+      meId: me,
+      messages: [
+        { id: uid(), type: 'date', text: todayKo() },
+        { id: uid(), type: 'notice', text: '이하늘님이 들어왔습니다.' },
+        { id: uid(), type: 'text', sender: a, text: '얘들아 역 앞에 새로 생긴 카페 가봤어?', time: '오후 3:24', unread: '' },
+        { id: uid(), type: 'text', sender: a, text: '오픈 기념으로 음료 1+1 한대!', time: '오후 3:24', unread: '' },
+        { id: uid(), type: 'text', sender: b, text: '헐 진짜? 언제까지래', time: '오후 3:25', unread: '' },
+        { id: uid(), type: 'text', sender: me, text: '나 어제 다녀왔는데 딸기라떼 대박이야 🍓', time: '오후 3:25', unread: '1' },
+        { id: uid(), type: 'text', sender: me, text: '이번 주 일요일까지래', time: '오후 3:25', unread: '1' },
+        { id: uid(), type: 'text', sender: c, text: '그럼 토요일에 다 같이 가자!!', time: '오후 3:27', unread: '' },
+        { id: uid(), type: 'text', sender: a, text: '좋아 👍', time: '오후 3:27', unread: '' },
+      ],
+      play: { stageBg: '#1b1d21', startCount: 2, autoDelay: 1.4, typeSpeed: 14, typing: true, anim: true },
+    };
+  }
+
+  let state;
+  try { state = JSON.parse(localStorage.getItem(STORE_KEY)); } catch (e) { state = null; }
+  if (!state || !state.people || !state.messages) state = sample();
+  state.play = Object.assign(sample().play, state.play || {});
+  state.room = Object.assign(sample().room, state.room || {});
+
+  let saveTimer = null, warned = false;
+  function save() {
+    clearTimeout(saveTimer);
+    saveTimer = setTimeout(() => {
+      try { localStorage.setItem(STORE_KEY, JSON.stringify(state)); }
+      catch (e) { if (!warned) { warned = true; alert('브라우저 저장 공간이 부족해 자동 저장이 안 됩니다. 사진 크기를 줄이거나 [저장(JSON)]으로 파일을 받아 두세요.'); } }
+    }, 250);
+  }
+  const person = (id) => state.people.find(p => p.id === id) || state.people[0];
+  const isMe = (id) => id === state.meId;
+
+  // ---------- DOM 도우미 ----------
+  function h(tag, attrs, ...kids) {
+    const el = document.createElement(tag);
+    if (attrs) for (const [k, v] of Object.entries(attrs)) {
+      if (v == null || v === false) continue;
+      if (k === 'class') el.className = v;
+      else if (k === 'text') el.textContent = v;
+      else if (k === 'html') el.innerHTML = v;
+      else if (k.startsWith('on')) el.addEventListener(k.slice(2), v);
+      else if (k in el && k !== 'list') { try { el[k] = v; } catch (e) { el.setAttribute(k, v); } }
+      else el.setAttribute(k, v);
+    }
+    for (const kid of kids.flat()) if (kid != null && kid !== false) el.append(kid.nodeType ? kid : document.createTextNode(kid));
+    return el;
+  }
+  const svg = (s) => { const t = document.createElement('template'); t.innerHTML = s.trim(); return t.content.firstChild; };
+
+  const ICON = {
+    back: '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#111" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 4l-8 8 8 8"/></svg>',
+    search: '<svg width="23" height="23" viewBox="0 0 24 24" fill="none" stroke="#111" stroke-width="1.9" stroke-linecap="round"><circle cx="10.5" cy="10.5" r="6.5"/><path d="M15.5 15.5L20 20"/></svg>',
+    menu: '<svg width="23" height="23" viewBox="0 0 24 24" fill="none" stroke="#111" stroke-width="1.9" stroke-linecap="round"><path d="M4 6.5h16M4 12h16M4 17.5h16"/></svg>',
+    plus: '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#555" stroke-width="1.8" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>',
+    smile: '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#555" stroke-width="1.6" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><circle cx="9" cy="10" r=".9" fill="#555" stroke="none"/><circle cx="15" cy="10" r=".9" fill="#555" stroke="none"/><path d="M8.3 14.2c1 1.4 2.2 2 3.7 2s2.7-.6 3.7-2"/></svg>',
+    hash: '<svg width="23" height="23" viewBox="0 0 24 24" fill="none" stroke="#555" stroke-width="1.8" stroke-linecap="round"><path d="M9.5 4L8 20M16 4l-1.5 16M4.5 9h15M4 15h15"/></svg>',
+    send: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#3a2f00" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19V5M6 11l6-6 6 6"/></svg>',
+    cal: '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2"><rect x="4" y="5.5" width="16" height="14.5" rx="2"/><path d="M4 10h16M8.5 3.5v4M15.5 3.5v4"/></svg>',
+    signal: '<svg width="18" height="12" viewBox="0 0 18 12" fill="#111"><rect x="0" y="8" width="3" height="4" rx="1"/><rect x="5" y="5.5" width="3" height="6.5" rx="1"/><rect x="10" y="3" width="3" height="9" rx="1"/><rect x="15" y="0" width="3" height="12" rx="1"/></svg>',
+    wifi: '<svg width="17" height="12" viewBox="0 0 17 12" fill="#111"><path d="M8.5 2.2c2.4 0 4.6.9 6.3 2.5l1.2-1.2C14 1.5 11.4.4 8.5.4S3 1.5 1 3.5l1.2 1.2C3.9 3.1 6.1 2.2 8.5 2.2z"/><path d="M8.5 5.6c1.5 0 2.8.5 3.9 1.5l1.2-1.2C12.2 4.6 10.4 3.8 8.5 3.8S4.8 4.6 3.4 5.9l1.2 1.2c1.1-1 2.4-1.5 3.9-1.5z"/><path d="M8.5 9c.6 0 1.1.2 1.6.6L8.5 11.3 6.9 9.6C7.4 9.2 7.9 9 8.5 9z"/></svg>',
+    battery: '<svg width="27" height="13" viewBox="0 0 27 13"><rect x=".5" y=".5" width="23" height="12" rx="3.5" fill="none" stroke="#111" stroke-opacity=".4"/><rect x="2" y="2" width="20" height="9" rx="2" fill="#111"/><path d="M25 4.5v4c.8-.3 1.3-1.1 1.3-2s-.5-1.7-1.3-2z" fill="#111" fill-opacity=".45"/></svg>',
+  };
+  function defaultAvatar(color) {
+    return svg(`<svg viewBox="0 0 40 40"><rect width="40" height="40" fill="${color || '#9fb8cf'}"/><circle cx="20" cy="16" r="7" fill="#fff" fill-opacity=".92"/><path d="M6.5 38c1.6-7.4 7-11.5 13.5-11.5S31.9 30.6 33.5 38z" fill="#fff" fill-opacity=".92"/></svg>`);
+  }
+  function avatarNode(p) {
+    return p && p.avatar ? h('img', { src: p.avatar, alt: '' }) : defaultAvatar(p && p.color);
+  }
+
+  // ---------- 이미지 축소 ----------
+  function readImage(file, maxSize, cb) {
+    const fr = new FileReader();
+    fr.onload = () => {
+      const img = new Image();
+      img.onload = () => {
+        const s = Math.min(1, maxSize / Math.max(img.width, img.height));
+        const c = document.createElement('canvas'); c.width = Math.round(img.width * s); c.height = Math.round(img.height * s);
+        c.getContext('2d').drawImage(img, 0, 0, c.width, c.height);
+        cb(c.toDataURL('image/jpeg', 0.86));
+      };
+      img.src = fr.result;
+    };
+    fr.readAsDataURL(file);
+  }
+  function pickFile(accept, cb) {
+    const inp = h('input', { type: 'file', accept });
+    inp.addEventListener('change', () => { if (inp.files[0]) cb(inp.files[0]); });
+    inp.click();
+  }
+
+  // ---------- 채팅 화면 렌더 ----------
+  const sameGroup = (a, b) => a && b && (a.type === 'text' || a.type === 'image') && (b.type === 'text' || b.type === 'image')
+    && a.sender === b.sender && (a.time || '') === (b.time || '');
+
+  let playCount = null;   // null = 전부 표시
+  let typingText = '';    // 입력창에 타이핑 중인 글자
+  let typingOn = false;
+
+  function renderScreen(opts = {}) {
+    const screen = $('screen');
+    const r = state.room;
+    const oldChat = screen.querySelector('.k-chat');
+    const oldScroll = oldChat ? oldChat.scrollTop : 0;
+    screen.style.setProperty('--k-bg', r.bg);
+    $('device').classList.toggle('bare', !r.frame);
+
+    const kids = [];
+    if (r.showStatus) {
+      kids.push(h('div', { class: 'k-status' }, h('span', { text: r.statusTime }),
+        h('span', { class: 'icons' }, svg(ICON.signal), svg(ICON.wifi), r.battery ? svg(ICON.battery) : null)));
+    } else kids.push(h('div', { style: 'height:14px;flex:none' }));
+
+    const count = r.count === '' || r.count == null ? String(state.people.length) : String(r.count);
+    kids.push(h('div', { class: 'k-head' },
+      h('div', { class: 'k-ic' }, svg(ICON.back)),
+      h('div', { class: 'k-title' }, h('b', { text: r.name }), count && count !== '0' ? h('span', { text: count }) : null),
+      h('div', { class: 'k-ic' }, svg(ICON.search)),
+      h('div', { class: 'k-ic' }, svg(ICON.menu))));
+
+    const chat = h('div', { class: 'k-chat' });
+    const list = playCount == null ? state.messages : state.messages.slice(0, playCount);
+    list.forEach((m, i) => {
+      const prev = list[i - 1], next = list[i + 1];
+      const anim = opts.animateLast && i === list.length - 1 && state.play.anim ? ' enter' : '';
+      if (m.type === 'date') {
+        chat.append(h('div', { class: 'k-divider' + anim }, h('span', { class: 'k-pill' }, svg(ICON.cal), m.text || '')));
+        return;
+      }
+      if (m.type === 'notice') {
+        chat.append(h('div', { class: 'k-divider' + anim }, h('span', { class: 'k-pill notice', text: m.text || '' })));
+        return;
+      }
+      const mine = isMe(m.sender), p = person(m.sender);
+      const cont = sameGroup(prev, m);
+      const showTime = !sameGroup(m, next);
+      const bubble = m.type === 'image'
+        ? h('div', { class: 'k-bubble img' }, m.image ? h('img', { src: m.image, alt: '' }) : h('div', { style: 'width:180px;height:140px;background:#d9d9d9' }))
+        : h('div', { class: 'k-bubble' + (cont ? '' : ' tail'), text: m.text || '' });
+      const meta = h('div', { class: 'k-meta' },
+        m.unread ? h('span', { class: 'k-unread', text: m.unread }) : null,
+        showTime && m.time ? h('span', { text: m.time }) : null);
+      const line = h('div', { class: 'k-line' }, bubble, meta);
+      const row = h('div', { class: 'k-row' + (mine ? ' me' : '') + (cont ? ' cont' : '') + anim });
+      if (mine) row.append(h('div', { class: 'k-body' }, line));
+      else {
+        row.append(h('div', { class: 'k-ava' + (cont ? ' ghost' : '') }, cont ? null : avatarNode(p)));
+        row.append(h('div', { class: 'k-body' }, cont ? null : h('div', { class: 'k-name', text: p ? p.name : '' }), line));
+      }
+      chat.append(row);
+    });
+    kids.push(chat);
+
+    if (r.showInput) {
+      const hasText = typingText.length > 0;
+      kids.push(h('div', { class: 'k-input' },
+        h('div', { class: 'bar' },
+          h('div', { class: 'plus' }, svg(ICON.plus)),
+          h('div', { class: 'field' },
+            h('div', { class: 'txt' }, hasText || typingOn
+              ? h('span', null, typingText, h('i', { class: 'caret' }))
+              : h('span', { class: 'ph', text: '' })),
+            svg(ICON.smile)),
+          hasText ? h('div', { class: 'send' }, svg(ICON.send)) : h('div', { class: 'hash' }, svg(ICON.hash))),
+        h('div', { class: 'home' }, h('i'))));
+    } else {
+      kids.push(h('div', { style: 'height:34px;flex:none;display:flex;align-items:flex-end;justify-content:center;padding-bottom:8px' },
+        h('i', { style: 'width:134px;height:5px;border-radius:3px;background:#111;display:block' })));
+    }
+
+    screen.replaceChildren(...kids);
+    // 스크롤: 항상 맨 아래로
+    if (opts.smooth) {
+      chat.scrollTop = oldScroll;
+      requestAnimationFrame(() => chat.scrollTo({ top: chat.scrollHeight, behavior: 'smooth' }));
+    } else chat.scrollTop = chat.scrollHeight;
+    updateInfo();
+  }
+
+  function updateInfo() {
+    const total = state.messages.length;
+    $('previewInfo').textContent = playCount == null ? `미리보기 · 메시지 ${total}개` : `재생 ${playCount} / ${total}`;
+  }
+
+  // ---------- 크기 맞춤 ----------
+  function fit(container) {
+    const scaler = $('scaler'), dev = $('device');
+    const w = dev.offsetWidth, hgt = dev.offsetHeight;
+    const cs = getComputedStyle(container);
+    const aw = container.clientWidth - parseFloat(cs.paddingLeft) - parseFloat(cs.paddingRight);
+    const ah = container.clientHeight - parseFloat(cs.paddingTop) - parseFloat(cs.paddingBottom);
+    const s = Math.max(0.1, Math.min(aw / w, ah / hgt, container === $('stageWrap') ? 3 : 1));
+    dev.style.transform = `scale(${s})`;
+    scaler.style.width = w * s + 'px'; scaler.style.height = hgt * s + 'px';
+  }
+  const currentContainer = () => ($('stage').hidden ? $('previewArea') : $('stageWrap'));
+  const refit = () => fit(currentContainer());
+  new ResizeObserver(refit).observe($('previewArea'));
+  window.addEventListener('resize', refit);
+
+  // ---------- 편집 패널: 채팅방 ----------
+  function bindRoom() {
+    const r = state.room, p = state.play;
+    const map = [
+      ['roomName', 'name', r], ['roomCount', 'count', r], ['statusTime', 'statusTime', r], ['bgColor', 'bg', r],
+      ['stageBg', 'stageBg', p], ['startCount', 'startCount', p], ['autoDelay', 'autoDelay', p], ['typeSpeed', 'typeSpeed', p],
+    ];
+    for (const [id, key, obj] of map) {
+      const el = $(id); el.value = obj[key];
+      el.oninput = () => { obj[key] = el.type === 'number' ? Number(el.value) : el.value; save(); renderScreen(); };
+    }
+    const checks = [['optStatus', 'showStatus', r], ['optInput', 'showInput', r], ['optFrame', 'frame', r], ['optBattery', 'battery', r],
+      ['optTyping', 'typing', p], ['optAnim', 'anim', p]];
+    for (const [id, key, obj] of checks) {
+      const el = $(id); el.checked = !!obj[key];
+      el.onchange = () => { obj[key] = el.checked; save(); renderScreen(); refit(); };
+    }
+  }
+
+  // ---------- 편집 패널: 참여자 ----------
+  const PALETTE = ['#9fb8cf', '#f2a7a7', '#a7d3b5', '#c7b4ea', '#f3c98b', '#8fd0d6', '#e7a9cf', '#b9c48a'];
+  function renderPeople() {
+    const box = $('people'); box.replaceChildren();
+    state.people.forEach((p) => {
+      const ava = h('button', { class: 'ava-btn', type: 'button', title: '프로필 사진 바꾸기', 'aria-label': `${p.name} 프로필 사진 바꾸기`,
+        onclick: () => pickFile('image/*', (f) => readImage(f, 200, (url) => { p.avatar = url; save(); renderAll(); })) }, avatarNode(p));
+      const name = h('input', { type: 'text', value: p.name, 'aria-label': '이름',
+        oninput: () => { p.name = name.value; save(); renderScreen(); renderChips(); refreshSenderOptions(); } });
+      const meRadio = h('label', { class: 'me-tag' }, h('input', { type: 'radio', name: 'meRadio', checked: isMe(p.id),
+        onchange: () => { state.meId = p.id; save(); renderAll(); } }), '나');
+      const tools = h('span', null,
+        p.avatar ? h('button', { class: 'icon-btn', type: 'button', title: '기본 프로필로', text: '사진 지우기',
+          onclick: () => { p.avatar = null; save(); renderAll(); } }) : null,
+        h('button', { class: 'icon-btn del', type: 'button', title: '참여자 삭제', text: '삭제',
+          onclick: () => {
+            if (state.people.length <= 1) return;
+            const used = state.messages.some(m => m.sender === p.id);
+            if (used && !confirm(`${p.name}님의 메시지도 함께 삭제할까요?`)) return;
+            state.messages = state.messages.filter(m => m.sender !== p.id);
+            state.people = state.people.filter(x => x !== p);
+            if (state.meId === p.id) state.meId = state.people[0].id;
+            if (quickSender === p.id) quickSender = state.people[0].id;
+            save(); renderAll();
+          } }));
+      box.append(h('div', { class: 'person' }, ava, name, meRadio, tools));
+    });
+  }
+  $('btnAddPerson').onclick = () => {
+    const n = state.people.length;
+    state.people.push({ id: uid(), name: `참여자${n}`, avatar: null, color: PALETTE[n % PALETTE.length] });
+    save(); renderAll();
+  };
+
+  // ---------- 빠른 입력 ----------
+  let quickSender = state.people.find(p => !isMe(p.id))?.id || state.meId;
+  function renderChips() {
+    const box = $('quickChips'); box.replaceChildren();
+    if (!state.people.some(p => p.id === quickSender)) quickSender = state.people[0].id;
+    state.people.forEach((p) => box.append(h('button', { class: 'chip', type: 'button', 'aria-pressed': String(p.id === quickSender),
+      text: isMe(p.id) ? `${p.name} (나)` : p.name, onclick: () => { quickSender = p.id; renderChips(); $('quickText').focus(); } })));
+  }
+  function lastTime() {
+    for (let i = state.messages.length - 1; i >= 0; i--) if (state.messages[i].time) return state.messages[i].time;
+    return nowKoTime();
+  }
+  function addMessage(m) {
+    state.messages.push(Object.assign({ id: uid() }, m));
+    save(); renderMsgs(); renderScreen();
+    const list = $('msgs'); list.lastElementChild?.scrollIntoView({ block: 'nearest' });
+  }
+  function quickAdd() {
+    const t = $('quickText').value;
+    if (!t.trim()) return;
+    const time = $('quickTime').value.trim() || lastTime();
+    addMessage({ type: 'text', sender: quickSender, text: t.replace(/\s+$/, ''), time, unread: '' });
+    $('quickText').value = ''; $('quickTime').value = time; $('quickText').focus();
+  }
+  $('quickText').addEventListener('keydown', (e) => {
+    if (e.key === 'Enter' && !e.shiftKey && !e.isComposing) { e.preventDefault(); quickAdd(); }
+  });
+  $('btnQuickAdd').onclick = quickAdd;
+  $('btnAddImage').onclick = () => pickFile('image/*', (f) => readImage(f, 900, (url) =>
+    addMessage({ type: 'image', sender: quickSender, image: url, time: $('quickTime').value.trim() || lastTime(), unread: '' })));
+  $('btnAddDate').onclick = () => addMessage({ type: 'date', text: todayKo() });
+  $('btnAddNotice').onclick = () => addMessage({ type: 'notice', text: `${person(quickSender).name}님이 들어왔습니다.` });
+
+  // ---------- 메시지 목록 ----------
+  function senderSelect(m) {
+    const sel = h('select', { 'aria-label': '보낸 사람', class: 'sender-sel' });
+    state.people.forEach(p => sel.append(h('option', { value: p.id, text: isMe(p.id) ? `${p.name} (나)` : p.name, selected: p.id === m.sender })));
+    sel.onchange = () => { m.sender = sel.value; save(); renderMsgs(); renderScreen(); };
+    return sel;
+  }
+  function refreshSenderOptions() {
+    document.querySelectorAll('.sender-sel').forEach(sel => {
+      [...sel.options].forEach(o => { const p = person(o.value); o.textContent = isMe(p.id) ? `${p.name} (나)` : p.name; });
+    });
+  }
+  function renderMsgs() {
+    const box = $('msgs'); box.replaceChildren();
+    if (!state.messages.length) { box.append(h('div', { class: 'empty', text: '아직 메시지가 없어요. 위에서 보낼 사람을 고르고 입력해 보세요.' })); return; }
+    state.messages.forEach((m, i) => {
+      const sys = m.type === 'date' || m.type === 'notice';
+      const typeSel = h('select', { 'aria-label': '종류' },
+        [['text', '텍스트'], ['image', '사진'], ['date', '날짜'], ['notice', '안내']].map(([v, t]) => h('option', { value: v, text: t, selected: m.type === v })));
+      typeSel.onchange = () => {
+        m.type = typeSel.value;
+        if ((m.type === 'text' || m.type === 'image') && !m.sender) { m.sender = quickSender; m.time = m.time || lastTime(); }
+        if (m.type === 'date' && !m.text) m.text = todayKo();
+        save(); renderMsgs(); renderScreen();
+      };
+      const field = (cls, key, ph, label) => {
+        const el = h('input', { type: 'text', class: cls, value: m[key] ?? '', placeholder: ph, 'aria-label': label, title: label });
+        el.oninput = () => { m[key] = el.value; save(); renderScreen(); }; return el;
+      };
+      const move = (d) => { const j = i + d; if (j < 0 || j >= state.messages.length) return;
+        [state.messages[i], state.messages[j]] = [state.messages[j], state.messages[i]]; save(); renderMsgs(); renderScreen(); };
+      const tools = h('span', { class: 'tools' },
+        h('button', { class: 'icon-btn', type: 'button', title: '위로', 'aria-label': '위로', text: '↑', onclick: () => move(-1) }),
+        h('button', { class: 'icon-btn', type: 'button', title: '아래로', 'aria-label': '아래로', text: '↓', onclick: () => move(1) }),
+        h('button', { class: 'icon-btn', type: 'button', title: '복제', text: '복제', onclick: () => {
+          state.messages.splice(i + 1, 0, Object.assign({}, m, { id: uid() })); save(); renderMsgs(); renderScreen(); } }),
+        h('button', { class: 'icon-btn del', type: 'button', title: '삭제', text: '삭제', onclick: () => {
+          state.messages.splice(i, 1); save(); renderMsgs(); renderScreen(); } }));
+
+      const top = h('div', { class: 'mtop' }, h('span', { class: 'idx', text: String(i + 1) }), typeSel,
+        sys ? null : senderSelect(m),
+        sys ? null : field('time', 'time', '오후 3:24', '시간'),
+        sys ? null : field('num', 'unread', '안읽음', '안읽음 숫자'),
+        field('num', 'delay', '대기', '자동재생 대기(초)'),
+        tools);
+
+      let bodyEl;
+      if (m.type === 'image') {
+        bodyEl = h('div', { class: 'img-pick' }, m.image ? h('img', { src: m.image, alt: '' }) : null,
+          h('button', { class: 'btn sm', type: 'button', text: m.image ? '사진 바꾸기' : '사진 선택',
+            onclick: () => pickFile('image/*', (f) => readImage(f, 900, (url) => { m.image = url; save(); renderMsgs(); renderScreen(); })) }));
+      } else {
+        bodyEl = h('textarea', { rows: m.type === 'text' ? 2 : 1, value: m.text || '', 'aria-label': '내용' });
+        bodyEl.oninput = () => { m.text = bodyEl.value; save(); renderScreen(); };
+      }
+      box.append(h('div', { class: 'mrow' + (sys ? ' sys' : isMe(m.sender) ? ' me' : '') }, top, bodyEl));
+    });
+  }
+
+  // ---------- 저장 / 불러오기 / 초기화 ----------
+  $('btnExport').onclick = () => {
+    const blob = new Blob([JSON.stringify(state, null, 1)], { type: 'application/json' });
+    const a = h('a', { href: URL.createObjectURL(blob), download: `${state.room.name || 'chat'}.json` });
+    document.body.append(a); a.click(); a.remove();
+    setTimeout(() => URL.revokeObjectURL(a.href), 2000);
+  };
+  $('fileImport').onchange = (e) => {
+    const f = e.target.files[0]; if (!f) return;
+    const fr = new FileReader();
+    fr.onload = () => {
+      try {
+        const s = JSON.parse(fr.result);
+        if (!s.people || !s.messages) throw new Error('형식');
+        state = s; state.play = Object.assign(sample().play, s.play || {}); state.room = Object.assign(sample().room, s.room || {});
+        save(); renderAll();
+      } catch (err) { alert('이 파일은 채팅방 메이커에서 저장한 JSON이 아니에요.'); }
+    };
+    fr.readAsText(f); e.target.value = '';
+  };
+  $('btnReset').onclick = () => {
+    const choice = prompt('1 = 빈 채팅방으로 시작, 2 = 예시 대화 불러오기', '1');
+    if (choice !== '1' && choice !== '2') return;
+    const s = sample();
+    if (choice === '1') { s.messages = []; s.people = s.people.slice(0, 2); s.people[1].name = '상대방'; s.room.name = '채팅방'; }
+    state = s; save(); renderAll();
+  };
+
+  // ---------- 녹화 모드 ----------
+  let autoTimer = null, typeTimer = null, hintTimer = null;
+  const stage = $('stage');
+  function enterStage() {
+    stopPlayback();
+    stage.style.background = state.play.stageBg;
+    stage.hidden = false;
+    $('stageWrap').append($('scaler'));
+    playCount = Math.max(0, Math.min(state.messages.length, Number(state.play.startCount) || 0));
+    typingText = ''; typingOn = false;
+    renderScreen(); refit();
+    const hint = $('stageHint'); hint.classList.remove('gone');
+    clearTimeout(hintTimer); hintTimer = setTimeout(() => hint.classList.add('gone'), 3500);
+    if (document.documentElement.requestFullscreen) document.documentElement.requestFullscreen().catch(() => {});
+  }
+  function exitStage() {
+    stopPlayback();
+    stage.hidden = true; $('stageHint').classList.add('gone');
+    $('previewArea').append($('scaler'));
+    playCount = null; typingText = ''; typingOn = false;
+    renderScreen(); refit();
+    if (document.fullscreenElement) document.exitFullscreen().catch(() => {});
+  }
+  function stopPlayback() { clearTimeout(autoTimer); autoTimer = null; finishTyping(false); }
+  function finishTyping(commit) {
+    if (!typeTimer && !typingOn) return false;
+    clearInterval(typeTimer); typeTimer = null; typingOn = false; typingText = '';
+    if (commit) { playCount++; renderScreen({ animateLast: true, smooth: true }); }
+    else renderScreen();
+    return true;
+  }
+  // 다음 메시지 표시. 끝나면 cb 호출
+  function next(cb) {
+    if (typeTimer) { finishTyping(true); cb && cb(); return; }
+    if (playCount >= state.messages.length) return;
+    const m = state.messages[playCount];
+    if (state.play.typing && state.room.showInput && m.type === 'text' && isMe(m.sender) && m.text) {
+      const chars = Array.from(m.text); let k = 0;
+      typingOn = true; typingText = ''; renderScreen();
+      typeTimer = setInterval(() => {
+        k++; typingText = chars.slice(0, k).join(''); renderScreen();
+        if (k >= chars.length) {
+          clearInterval(typeTimer);
+          typeTimer = setTimeout(() => { typeTimer = null; finishTyping(true); cb && cb(); }, 350);
+        }
+      }, 1000 / Math.max(2, Number(state.play.typeSpeed) || 14));
+      return;
+    }
+    playCount++;
+    renderScreen({ animateLast: true, smooth: true });
+    cb && cb();
+  }
+  function prev() {
+    stopPlayback();
+    if (playCount > 0) { playCount--; renderScreen(); }
+  }
+  function auto() {
+    if (autoTimer || typeTimer) { clearTimeout(autoTimer); autoTimer = null; return; }
+    const step = () => {
+      if (playCount >= state.messages.length) { autoTimer = null; return; }
+      const m = state.messages[playCount];
+      const d = m.delay !== undefined && m.delay !== '' && !isNaN(Number(m.delay)) ? Number(m.delay) : Number(state.play.autoDelay) || 1.4;
+      autoTimer = setTimeout(() => { autoTimer = -1; next(() => { if (autoTimer) step(); }); }, d * 1000);
+    };
+    step();
+  }
+  $('btnRecord').onclick = enterStage;
+  document.addEventListener('keydown', (e) => {
+    if (stage.hidden) return;
+    const k = e.key;
+    if (k === 'Escape') { exitStage(); return; }
+    if (k === ' ' || k === 'ArrowRight' || k === 'Enter' || k === 'ArrowDown') { e.preventDefault(); next(); }
+    else if (k === 'ArrowLeft' || k === 'ArrowUp') { e.preventDefault(); prev(); }
+    else if (k === 'a' || k === 'A' || k === 'ㅁ') { auto(); }
+    else if (k === 'r' || k === 'R' || k === 'ㄱ') { stopPlayback(); playCount = Math.max(0, Math.min(state.messages.length, Number(state.play.startCount) || 0)); renderScreen(); }
+    else return;
+    $('stageHint').classList.add('gone');
+    updateInfo();
+  });
+  stage.addEventListener('click', () => next());
+  let cursorTimer;
+  stage.addEventListener('mousemove', () => { stage.classList.remove('nocursor'); clearTimeout(cursorTimer); cursorTimer = setTimeout(() => stage.classList.add('nocursor'), 1500); });
+  document.addEventListener('fullscreenchange', () => setTimeout(refit, 50));
+
+  // ---------- 시작 ----------
+  function renderAll() { bindRoom(); renderPeople(); renderChips(); renderMsgs(); renderScreen(); refit(); }
+  $('quickTime').value = lastTime();
+  renderAll();
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(() => renderScreen());
+})();
+</script>
+</body>
+</html>
